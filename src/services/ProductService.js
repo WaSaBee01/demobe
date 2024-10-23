@@ -89,13 +89,29 @@ const deleteProduct = (id) => {
     });
 }
 
+const deleteManyProduct = (ids) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            await Product.deleteMany({ _id: ids })
+
+            resolve({
+                status: 'OK',
+                message: 'Delete product success',
+            })
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
 const getAllProduct = (limit, page, sort, filter) => {
     return new Promise(async (resolve, reject) => {
         try {
             const totalProduct = await Product.countDocuments()
-            if(filter){
+            if (filter) {
                 const label = filter[0];
-                const allProductFilter = await Product.find({[label]: {$regex: filter[1]}}).limit(limit).skip(page * limit)
+                const allProductFilter = await Product.find({ [label]: { $regex: filter[1] } }).limit(limit).skip(page * limit)
                 resolve({
                     status: 'OK',
                     message: 'Success',
@@ -105,7 +121,7 @@ const getAllProduct = (limit, page, sort, filter) => {
                     totalPage: Math.ceil(totalProduct / limit)
                 })
             }
-            if(sort){
+            if (sort) {
                 const Sort = {}
                 Sort[sort[1]] = sort[0]
                 const allProductSort = await Product.find().limit(limit).skip(page * limit).sort(Sort)
@@ -158,11 +174,27 @@ const getProductDetail = (id) => {
     });
 }
 
+const getAllType = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const allType = await Product.distinct('type')
+            resolve({
+                status: 'OK',
+                message: 'Success',
+                data: allType,
+            })
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
 
 module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
     getAllProduct,
-    getProductDetail
+    getProductDetail,
+    deleteManyProduct,
+    getAllType
 }

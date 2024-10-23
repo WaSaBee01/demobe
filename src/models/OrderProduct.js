@@ -21,7 +21,7 @@ const orderSchema = new mongoose.Schema(
             address: { type: String, required: true },
             city: { type: String, required: true },
             phone: { type: Number, required: true },
-            
+
         },
 
         paymentMethod: { type: String, required: true },
