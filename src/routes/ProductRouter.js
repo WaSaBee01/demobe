@@ -12,7 +12,4 @@ router.post('/delete-many', authMiddleware, ProductController.deleteMany)
 router.get('/get-all-type', ProductController.getAllType)
 
 
-
-
-
 module.exports = router;
