@@ -5,7 +5,7 @@ const Product = require("../models/ProductModal");
 
 const createOrder = (newOrder) => {
     return new Promise(async (resolve, reject) => {
-        const { orderItems, paymentMethod, itemsPrice, shippingPrice, totalPrice, fullName, address, city, phone, user } = newOrder;
+        const { orderItems, paymentMethod, itemsPrice, shippingPrice, totalPrice, fullName, address, city, phone, user, isPaid, paidAt } = newOrder;
 
         try {
             const promises = orderItems.map(async (order) => {
@@ -36,7 +36,9 @@ const createOrder = (newOrder) => {
                         itemsPrice,
                         shippingPrice,
                         totalPrice,
-                        user: user
+                        user: user,
+                        isPaid,
+                        paidAt
                     })
                     if (createdOrder) {
                         return {
@@ -52,7 +54,6 @@ const createOrder = (newOrder) => {
                     }
                 }
             })
-
             const results = await Promise.all(promises);
             const newData = results && results.filter((item) => item.id)
             if (newData.length) {
@@ -73,10 +74,10 @@ const createOrder = (newOrder) => {
     });
 }
 
-const getOrderDetails = (id) => {
+const getAllOrderDetails = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const order = await Order.findOne({
+            const order = await Order.find({
                 user: id
             })
             if (order === null) {
@@ -97,9 +98,109 @@ const getOrderDetails = (id) => {
     });
 }
 
+const getOrderDetails = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const order = await Order.findById({
+                _id: id
+            })
+            if (order === null) {
+                resolve({
+                    status: 'ERR',
+                    message: 'The order does not exist'
+                })
+            } else {
+                resolve({
+                    status: 'OK',
+                    message: 'Success',
+                    data: order
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
 
+const cancelOrder = (id, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const order = await Order.findByIdAndDelete(id)
+            if (order === null) {
+                resolve({
+                    status: 'ERR',
+                    message: 'The order does not exist'
+                })
+            }
+            resolve({
+                status: 'OK',
+                message: 'Success',
+                data: order
+            })
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+// const cancelOrder = (id, data) => {
+//     return new Promise(async (resolve, reject) => {
+//         try {
+//             let order = []
+//             const promises = data.map(async (order) => {
+//                 const productData = await Product.findOneAndUpdate(
+//                     {
+//                         _id: order.product
+//                     },
+//                     {
+//                         $inc: {
+//                             countInStock: +order.amount,
+//                             selled: -order.amount
+//                         }
+//                     },
+//                     { new: true }
+//                 )
+//                 if (productData) {
+//                     order = await Order.findByIdAndDelete(id)
+//                     if (order === null) {
+//                         resolve({
+//                             status: 'ERR',
+//                             message: 'The order does not exist'
+//                         })
+//                     }
+//                 } else {
+//                     return {
+//                         status: 'ERR',
+//                         message: 'ERR',
+//                         id: order.product
+//                     }
+//                 }
+//             })
+//             const results = await Promise.all(promises);
+//             const newData = results && results.filter((item) => item.id)
+//             if (newData.length) {
+//                 resolve({
+//                     status: 'ERR',
+//                     message: `Sản phẩm với id ${newData.join(',')} không tồn tại`,
+//                     data: newData
+//                 })
+//             }
+//             resolve({
+//                 status: 'OK',
+//                 message: 'successfully',
+//                 data: order
+//             })
+//         } catch (e) {
+//             console.log('e', e)
+//             reject(e);
+//         }
+//     });
+// }
 
 module.exports = {
     createOrder,
+    getAllOrderDetails,
     getOrderDetails,
+    cancelOrder
 }

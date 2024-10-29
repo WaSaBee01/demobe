@@ -4,9 +4,8 @@ const mongoose = require('mongoose');
 const routes = require('./routes');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const bodyCookie = require('cookie-parser');
 const cookieParser = require('cookie-parser');
-const { $where } = require('./models/UserModel');
+
 dotenv.config();
 
 const app = express()
