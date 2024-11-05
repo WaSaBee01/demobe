@@ -2,10 +2,11 @@ const bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require('./jwtService');
 const Order = require("../models/OrderProduct");
 const Product = require("../models/ProductModal");
+const EmailService = require('../services/EmailService');
 
 const createOrder = (newOrder) => {
     return new Promise(async (resolve, reject) => {
-        const { orderItems, paymentMethod, itemsPrice, shippingPrice, totalPrice, fullName, address, city, phone, user, isPaid, paidAt } = newOrder;
+        const { orderItems, paymentMethod, itemsPrice, shippingPrice, totalPrice, fullName, address, city, phone, user, isPaid, paidAt, email } = newOrder;
 
         try {
             const promises = orderItems.map(async (order) => {
@@ -22,29 +23,11 @@ const createOrder = (newOrder) => {
                     },
                     { new: true }
                 )
-                console.log('productData', productData)
                 if (productData) {
-                    const createdOrder = await Order.create({
-                        orderItems,
-                        shippingAdress: {
-                            fullName,
-                            address,
-                            city,
-                            phone
-                        },
-                        paymentMethod,
-                        itemsPrice,
-                        shippingPrice,
-                        totalPrice,
-                        user: user,
-                        isPaid,
-                        paidAt
-                    })
-                    if (createdOrder) {
-                        return {
-                            status: 'OK',
-                            message: 'Order created successfully',
-                        }
+
+                    return {
+                        status: 'OK',
+                        message: 'Order created successfully',
                     }
                 } else {
                     return {
@@ -57,18 +40,41 @@ const createOrder = (newOrder) => {
             const results = await Promise.all(promises);
             const newData = results && results.filter((item) => item.id)
             if (newData.length) {
+                const arrId = []
+                newData.forEach((item) => {
+                    arrId.push(item.id)
+                })
                 resolve({
                     status: 'ERR',
-                    message: `Sản phẩm với id ${newData.join(',')} đã hết hàng`,
+                    message: `Sản phẩm với id ${arrId.join(',')} đã hết hàng`,
                     data: newData
                 })
+            } else {
+                const createdOrder = await Order.create({
+                    orderItems,
+                    shippingAdress: {
+                        fullName,
+                        address,
+                        city,
+                        phone
+                    },
+                    paymentMethod,
+                    itemsPrice,
+                    shippingPrice,
+                    totalPrice,
+                    user: user,
+                    isPaid,
+                    paidAt
+                })
+                if (createdOrder) {
+                    await EmailService.sendEmailCreateOrder(email, orderItems)
+                    resolve({
+                        status: 'OK',
+                        message: 'Order created successfully',
+                    })
+                }
             }
-            resolve({
-                status: 'OK',
-                message: 'Order created successfully',
-            })
         } catch (e) {
-            console.log('error', e)
             reject(e);
         }
     });

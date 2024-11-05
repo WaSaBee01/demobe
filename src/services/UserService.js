@@ -17,9 +17,8 @@ const createUser = (newUser) => {
                     message: 'Email already exists'
                 })
             }
-            //ma hoa password
+
             const hash = bcrypt.hashSync(password, 10);
-            console.log('hash', hash)
             const createdUser = await User.create({
                 name,
                 email,
