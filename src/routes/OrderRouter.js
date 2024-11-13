@@ -7,6 +7,7 @@ router.post('/create', OrderController.createOrder)
 router.get('/get-all-order/:id', OrderController.getAllOrderDetails)
 router.get('/get-order-details/:id', OrderController.getOrderDetails)
 router.delete('/cancel-order/:id', OrderController.cancelOrder)
+router.get('/get-all-orders/', OrderController.getAllOrder)
 
 
 //authUserMiddleware,
